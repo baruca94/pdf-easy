@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PDF Easy — a complete PDF toolkit that never uploads your file</title>
+<meta name="description" content="Free, open-source PDF toolkit that runs entirely in your browser. Merge, convert, sign, redact and compress PDFs without uploading anything. One HTML file, works offline.">
+<meta name="author" content="Víctor Cappanera Marco">
+<meta property="og:title" content="PDF Easy — a complete PDF toolkit that never uploads your file">
+<meta property="og:description" content="40+ PDF tools running entirely in your browser. No server, no account, no upload. One HTML file that works offline.">
+<meta property="og:type" content="website">
+<style>
+:root{
+  --paper:#f3f6fb;
+  --surface:#ffffff;
+  --surface-2:#eef2f9;
+  --line:#dbe3ef;
+  --line-soft:#e8edf5;
+  --ink:#101a2e;
+  --ink-2:#3d4d68;
+  --muted:#6b7c96;
+  --accent:#5a4be8;
+  --accent-soft:#ece9ff;
+  --safe:#12876a;
+  --safe-soft:#e2f4ee;
+  --warn:#a8562a;
+  --radius:16px;
+  --radius-sm:11px;
+  --shadow:0 1px 2px rgba(16,26,46,.05), 0 8px 24px -12px rgba(16,26,46,.18);
+  --shadow-lg:0 2px 4px rgba(16,26,46,.05), 0 24px 48px -20px rgba(16,26,46,.28);
+  --mono:ui-monospace,"Cascadia Mono","Segoe UI Mono",Consolas,"Roboto Mono",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+[data-theme="dark"]{
+  --paper:#0d1424;
+  --surface:#161f33;
+  --surface-2:#1e293f;
+  --line:#2e3c59;
+  --line-soft:#26314a;
+  --ink:#f2f6fc;
+  --ink-2:#c5d1e4;
+  --muted:#93a3bd;
+  --accent:#8b83ff;
+  --accent-soft:#241f4d;
+  --safe:#3ec99e;
+  --safe-soft:#12332a;
+  --warn:#e0975c;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.6);
+  --shadow-lg:0 2px 4px rgba(0,0,0,.3), 0 24px 48px -20px rgba(0,0,0,.7);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+  font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;
+  transition:background-color .3s ease,color .3s ease;
+}
+.wrap{width:100%;max-width:1120px;margin:0 auto;padding:0 22px}
+a{color:inherit}
+:focus-visible{outline:2.5px solid var(--accent);outline-offset:3px;border-radius:6px}
+
+/* ---------- utility type ---------- */
+.eyebrow{
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+}
+.eyebrow span{white-space:nowrap}
+.eyebrow i{width:4px;height:4px;border-radius:50%;background:var(--line);display:inline-block;font-style:normal}
+h1,h2,h3{letter-spacing:-.025em;line-height:1.12;margin:0}
+h1{font-size:clamp(34px,5.2vw,58px);font-weight:800}
+h2{font-size:clamp(25px,3.2vw,36px);font-weight:800}
+h3{font-size:17.5px;font-weight:700;letter-spacing:-.015em}
+p{margin:0 0 14px}
+.lede{font-size:clamp(16.5px,1.7vw,19px);color:var(--ink-2);max-width:60ch}
+.mark{
+  background:linear-gradient(transparent 62%, var(--accent-soft) 62%);
+  padding:0 2px;box-decoration-break:clone;-webkit-box-decoration-break:clone;
+}
+
+/* ---------- top bar ---------- */
+.topbar{
+  position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--paper) 88%,transparent);
+  backdrop-filter:saturate(140%) blur(10px);border-bottom:1px solid var(--line-soft);
+  transition:background-color .3s ease,border-color .3s ease;
+}
+.topbar-in{display:flex;align-items:center;gap:14px;height:64px}
+.brand{display:flex;align-items:center;gap:11px;text-decoration:none;font-weight:800;letter-spacing:-.02em}
+.glyph{
+  width:34px;height:34px;border-radius:10px;background:var(--accent);color:#fff;
+  display:grid;place-items:center;flex:none;box-shadow:0 6px 16px -8px var(--accent);
+}
+.glyph svg{width:19px;height:19px}
+.brand small{display:block;font-weight:500;font-size:11.5px;color:var(--muted);letter-spacing:0}
+.spacer{flex:1}
+.ctrl{display:flex;align-items:center;gap:8px}
+.langsw{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--surface)}
+.langsw button{
+  border:0;background:transparent;color:var(--muted);font-family:var(--mono);font-size:11px;
+  letter-spacing:.08em;padding:8px 11px;cursor:pointer;line-height:1;
+  transition:background-color .25s ease,color .25s ease;
+}
+.langsw button.on{background:var(--accent);color:#fff}
+.iconbtn{
+  width:38px;height:38px;border-radius:11px;border:1px solid var(--line);background:var(--surface);
+  color:var(--ink-2);display:grid;place-items:center;cursor:pointer;
+  transition:background-color .25s ease,border-color .25s ease,color .25s ease;
+}
+.iconbtn:hover{color:var(--ink);border-color:var(--muted)}
+.iconbtn svg{width:19px;height:19px}
+.hide{display:none !important}
+
+/* ---------- buttons ---------- */
+.btn{
+  display:inline-flex;align-items:center;gap:9px;border-radius:12px;padding:13px 20px;
+  font-size:15px;font-weight:650;text-decoration:none;border:1px solid transparent;cursor:pointer;
+  transition:transform .18s ease,box-shadow .25s ease,background-color .25s ease,border-color .25s ease,color .25s ease;
+  font-family:inherit;
+}
+.btn svg{width:18px;height:18px;flex:none}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 10px 24px -14px var(--accent)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 16px 30px -16px var(--accent)}
+.btn-ghost{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.btn-ghost:hover{border-color:var(--muted);transform:translateY(-1px)}
+.btn-small{padding:9px 14px;font-size:13.5px;border-radius:10px}
+
+/* ---------- the boundary: signature element ---------- */
+.hero{padding:66px 0 74px;position:relative}
+.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:0}
+.hero-left{padding-right:52px}
+.hero-right{
+  padding-left:52px;border-left:2px dashed var(--line);position:relative;
+  display:flex;flex-direction:column;justify-content:center;gap:14px;
+}
+.boundary-tag{
+  position:absolute;left:0;top:0;transform:translate(-50%,-50%) rotate(0deg);
+  background:var(--paper);padding:5px 10px;font-family:var(--mono);font-size:10.5px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--muted);white-space:nowrap;
+  border:1px solid var(--line);border-radius:999px;
+}
+.zone{border:1px solid var(--line);border-radius:var(--radius);padding:18px;background:var(--surface);box-shadow:var(--shadow)}
+.zone.empty{background:transparent;box-shadow:none;border-style:dashed}
+.zone-h{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:8px;
+}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--safe);flex:none}
+.dot.off{background:var(--line)}
+.filecard{display:flex;align-items:center;gap:12px;border:1px solid var(--line-soft);border-radius:var(--radius-sm);padding:12px;background:var(--surface-2)}
+.filecard svg{width:26px;height:26px;color:var(--accent);flex:none}
+.filecard b{display:block;font-size:14px}
+.filecard span{font-size:12.5px;color:var(--muted);font-family:var(--mono)}
+.log{margin-top:14px;font-family:var(--mono);font-size:12.2px;line-height:1.9;color:var(--ink-2)}
+.log li{list-style:none;display:flex;gap:9px;align-items:baseline;opacity:0;transform:translateY(4px);animation:logIn .5s ease forwards}
+.log li:nth-child(1){animation-delay:.35s}
+.log li:nth-child(2){animation-delay:.75s}
+.log li:nth-child(3){animation-delay:1.15s}
+.log ul{margin:0;padding:0}
+.log .ok{color:var(--safe);font-weight:700}
+.log .no{color:var(--muted);font-weight:700}
+@keyframes logIn{to{opacity:1;transform:none}}
+.empty-note{font-family:var(--mono);font-size:12px;color:var(--muted);line-height:1.8}
+.cta-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}
+.hero-foot{margin-top:20px;font-size:13.5px;color:var(--muted);display:flex;gap:16px;flex-wrap:wrap}
+.hero-foot b{color:var(--ink-2)}
+
+/* ---------- sections ---------- */
+section{padding:64px 0;border-top:1px solid var(--line-soft)}
+.sec-head{max-width:64ch;margin-bottom:34px}
+.sec-head p{color:var(--ink-2);margin-top:12px}
+
+/* tool groups */
+.groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));gap:16px}
+.group{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;
+  box-shadow:var(--shadow);transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease;
+}
+.group:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);border-color:var(--accent)}
+.group h3{margin-bottom:9px;display:flex;align-items:center;gap:9px}
+.group h3 em{
+  font-style:normal;font-family:var(--mono);font-size:11px;color:var(--accent);
+  background:var(--accent-soft);border-radius:6px;padding:3px 7px;letter-spacing:.06em;
+}
+.group p{font-size:14.4px;color:var(--ink-2);margin:0}
+
+/* steps: a real sequence, so it is numbered */
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:0;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--surface)}
+.step{padding:26px 24px;border-right:1px solid var(--line-soft)}
+.step:last-child{border-right:0}
+.step-n{font-family:var(--mono);font-size:12px;color:var(--accent);letter-spacing:.14em;margin-bottom:12px}
+.step h3{margin-bottom:8px}
+.step p{font-size:14.4px;color:var(--ink-2);margin:0}
+.step code{font-family:var(--mono);font-size:13px;background:var(--surface-2);padding:2px 6px;border-radius:6px}
+
+/* honest limits */
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.col{border:1px solid var(--line);border-radius:var(--radius);padding:24px;background:var(--surface);box-shadow:var(--shadow)}
+.col.yes{border-top:3px solid var(--safe)}
+.col.no{border-top:3px solid var(--warn)}
+.col h3{margin-bottom:14px;display:flex;align-items:center;gap:9px}
+.col ul{margin:0;padding:0;list-style:none}
+.col li{display:flex;gap:11px;padding:9px 0;border-bottom:1px solid var(--line-soft);font-size:14.6px;color:var(--ink-2)}
+.col li:last-child{border-bottom:0}
+.col li b{color:var(--ink);font-weight:650}
+.tick{flex:none;font-family:var(--mono);font-weight:700}
+.col.yes .tick{color:var(--safe)}
+.col.no .tick{color:var(--warn)}
+
+/* share */
+.share{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+.post{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:20px;box-shadow:var(--shadow);
+}
+.post-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.post-head span{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.post-body{font-size:14.5px;color:var(--ink-2);white-space:pre-wrap;max-height:270px;overflow:auto;padding-right:6px}
+.tips{list-style:none;margin:0;padding:0}
+.tips li{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line-soft);font-size:14.6px;color:var(--ink-2)}
+.tips li:last-child{border-bottom:0}
+.tips b{color:var(--ink)}
+.tips .k{font-family:var(--mono);font-size:11.5px;color:var(--accent);letter-spacing:.1em;flex:none;padding-top:2px}
+
+footer{border-top:1px solid var(--line-soft);padding:34px 0 46px;color:var(--muted);font-size:14px}
+.foot-in{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+footer a{color:var(--ink-2);text-decoration:none;border-bottom:1px solid var(--line)}
+footer a:hover{color:var(--accent);border-color:var(--accent)}
+
+.toast{
+  position:fixed;left:50%;bottom:26px;transform:translate(-50%,14px);opacity:0;pointer-events:none;
+  background:var(--ink);color:var(--paper);padding:11px 18px;border-radius:11px;font-size:14px;
+  box-shadow:var(--shadow-lg);transition:opacity .25s ease,transform .25s ease;z-index:60;
+}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+@media(max-width:900px){
+  .hero-grid{grid-template-columns:1fr}
+  .hero-left{padding-right:0}
+  .hero-right{padding-left:0;border-left:0;border-top:2px dashed var(--line);padding-top:38px;margin-top:34px}
+  .boundary-tag{left:50%;top:0;transform:translate(-50%,-50%)}
+  .cols,.share{grid-template-columns:1fr}
+  .step{border-right:0;border-bottom:1px solid var(--line-soft)}
+  .step:last-child{border-bottom:0}
+  section{padding:52px 0}
+  .hero{padding:44px 0 54px}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none !important;transition:none !important}
+  html{scroll-behavior:auto}
+  .log li{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar-in">
+    <a class="brand" href="#top">
+      <span class="glyph"><svg viewBox="0 0 24 24" fill="none"><path d="M6 3h7l5 5v13H6V3Z" stroke="currentColor" stroke-width="1.7" fill="rgba(255,255,255,.16)"/><path d="M13 3v5h5" stroke="currentColor" stroke-width="1.7"/><path d="M8.5 13.5h7M8.5 17h4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
+      <span>PDF Easy<small data-es="Herramientas de PDF en tu navegador">PDF tools in your browser</small></span>
+    </a>
+    <span class="spacer"></span>
+    <div class="ctrl">
+      <div class="langsw" role="group" aria-label="Language">
+        <button type="button" data-l="en" class="on">EN</button>
+        <button type="button" data-l="es">ES</button>
+      </div>
+      <button class="iconbtn" id="themeBtn" aria-label="Switch theme" title="Light / dark">
+        <svg id="iMoon" viewBox="0 0 24 24" fill="none"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+        <svg id="iSun" class="hide" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.7"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ══════════ HERO ══════════ -->
+<div class="hero">
+  <div class="wrap hero-grid">
+    <div class="hero-left">
+      <p class="eyebrow">
+        <span data-es="Gratis · licencia MIT">Free · MIT licence</span><i></i>
+        <span data-es="Sin cuenta">No account</span><i></i>
+        <span data-es="Un solo archivo HTML">One HTML file</span>
+      </p>
+      <h1 data-es="Todo lo que haces con un PDF, <span class=&quot;mark&quot;>sin que el PDF salga de tu ordenador</span>">Everything you do with a PDF, <span class="mark">without the PDF ever leaving your computer</span></h1>
+      <p class="lede" style="margin-top:20px" data-es="Más de 40 herramientas —unir, convertir, firmar, censurar, comprimir, medir planos, OCR— funcionando dentro de tu navegador. Sin servidor, sin registro y sin subir nada: el documento se abre en tu equipo, se procesa en tu equipo y se guarda en tu equipo.">Over 40 tools — merge, convert, sign, redact, compress, measure plans, OCR — running inside your browser. No server, no sign-up, no upload: the document opens on your machine, is processed on your machine and is saved on your machine.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="app.html">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span data-es="Abrir la aplicación">Open the app</span>
+        </a>
+        <a class="btn btn-ghost" href="app.html" download="PDF-Easy.html">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 4v10m0 0 4-4m-4 4-4-4M5 19h14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span data-es="Descargar para usarlo sin conexión">Download for offline use</span>
+        </a>
+      </div>
+      <p class="hero-foot">
+        <span data-es="<b>0 KB</b> enviados a ningún servidor">​<b>0 KB</b> sent to any server</span>
+        <span data-es="<b>Sin instalación</b>: doble clic y listo"><b>No install</b>: double-click and go</span>
+        <span data-es="<b>Chrome, Edge, Firefox</b> y móvil"><b>Chrome, Edge, Firefox</b> and mobile</span>
+      </p>
+    </div>
+
+    <aside class="hero-right">
+      <span class="boundary-tag" data-es="nada cruza esta línea">nothing crosses this line</span>
+
+      <div class="zone">
+        <div class="zone-h"><span class="dot"></span><span data-es="Tu ordenador">Your computer</span></div>
+        <div class="filecard">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M6 3h8l4 4v14H6V3Z" stroke="currentColor" stroke-width="1.6"/><path d="M14 3v4h4" stroke="currentColor" stroke-width="1.6"/><path d="M9 13h6M9 16.5h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span><b data-es="contrato-firmado.pdf">signed-contract.pdf</b><span>2.4 MB · <span data-es="abierto en memoria">opened in memory</span></span></span>
+        </div>
+        <div class="log">
+          <ul>
+            <li><span class="ok">✓</span><span data-es="documento leído en local">document read locally</span></li>
+            <li><span class="ok">✓</span><span data-es="firma añadida · página 3">signature added · page 3</span></li>
+            <li><span class="ok">✓</span><span data-es="guardado en tu carpeta">saved to your folder</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="zone empty">
+        <div class="zone-h"><span class="dot off"></span><span data-es="Internet">The internet</span></div>
+        <p class="empty-note" data-es="0 archivos enviados<br>0 cuentas creadas<br>0 datos recogidos<br><br>Solo se descargan una vez las librerías del propio navegador.">0 files sent<br>0 accounts created<br>0 data collected<br><br>The only thing fetched is the browser libraries, once.</p>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ══════════ WHAT IT DOES ══════════ -->
+<section id="tools">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow"><span data-es="Qué incluye">What is inside</span></p>
+      <h2 data-es="Seis grupos de herramientas, un solo archivo">Six groups of tools, one single file</h2>
+      <p data-es="Todo lo que la mayoría de la gente necesita hacer con un PDF durante el año, sin licencia y sin pedir permiso a nadie.">Everything most people need to do with a PDF over a year, with no licence and without asking anyone's permission.</p>
+    </div>
+    <div class="groups">
+      <article class="group">
+        <h3><em>01</em><span data-es="Organizar">Organise</span></h3>
+        <p data-es="Unir, dividir, extraer páginas, reordenar arrastrando, girar, recortar márgenes, insertar hojas en blanco, varias páginas por hoja, normalizar a A4.">Merge, split, extract pages, drag to reorder, rotate, crop margins, insert blank sheets, N pages per sheet, resize to A4.</p>
+      </article>
+      <article class="group">
+        <h3><em>02</em><span data-es="Convertir">Convert</span></h3>
+        <p data-es="PDF a Word, Excel, PowerPoint, imágenes o texto. Y al revés: Word, Excel, imágenes o texto a PDF, con márgenes y saltos de página reales.">PDF to Word, Excel, PowerPoint, images or text. And back: Word, Excel, images or text into PDF, with real margins and page breaks.</p>
+      </article>
+      <article class="group">
+        <h3><em>03</em><span data-es="Firmar">Sign</span></h3>
+        <p data-es="Dibuja tu firma, súbela como foto o pégala con Ctrl+V, guárdala en tu biblioteca y colócala donde quieras: portada, última página o dentro de una celda.">Draw your signature, upload a photo of it or paste it with Ctrl+V, keep it in your library and drop it anywhere: cover page, last page or inside a table cell.</p>
+      </article>
+      <article class="group">
+        <h3><em>04</em><span data-es="Editar">Edit</span></h3>
+        <p data-es="Corrige una línea del texto original, escribe encima, tapa o borra de verdad una zona. Rellena formularios y aplánalos para que nadie los cambie.">Fix a line of the original text, write on top, cover or genuinely erase an area. Fill forms in and flatten them so nobody can change them.</p>
+      </article>
+      <article class="group">
+        <h3><em>05</em><span data-es="Proteger">Protect</span></h3>
+        <p data-es="Censura real de datos personales, limpieza de metadatos y una revisión previa de cada archivo en busca de contenido activo antes de abrirlo.">Real redaction of personal data, metadata cleaning, and a check of every file for active content before it opens.</p>
+      </article>
+      <article class="group">
+        <h3><em>06</em><span data-es="Y además">And more</span></h3>
+        <p data-es="OCR de documentos escaneados, comparación visual de versiones, archivado PDF/A, códigos QR, medición sobre planos con calibración y modo por lotes.">OCR for scanned documents, visual version comparison, PDF/A archiving, QR codes, measuring on plans with calibration, and batch mode.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ USE IT LOCALLY ══════════ -->
+<section id="local">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow"><span data-es="Úsalo en tu equipo">Use it on your own machine</span></p>
+      <h2 data-es="Tres pasos, y funciona incluso sin internet">Three steps, and it works even with no internet</h2>
+      <p data-es="No hay instalador, ni cuenta, ni extensión que aceptar. Es un archivo HTML: tu navegador ya sabe abrirlo.">There is no installer, no account, no extension to approve. It is an HTML file: your browser already knows how to open it.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-n">STEP 01</div>
+        <h3 data-es="Descarga el archivo">Download the file</h3>
+        <p data-es="Pulsa «Descargar para usarlo sin conexión». Se guarda un único archivo, <code>PDF-Easy.html</code>, en tu carpeta de descargas.">Press “Download for offline use”. You get one single file, <code>PDF-Easy.html</code>, in your downloads folder.</p>
+      </div>
+      <div class="step">
+        <div class="step-n">STEP 02</div>
+        <h3 data-es="Ábrelo con doble clic">Open it with a double-click</h3>
+        <p data-es="Se abre en tu navegador como cualquier página. Puedes moverlo a tu escritorio, a una carpeta de red o a un USB: se lleva todo consigo.">It opens in your browser like any page. Move it to your desktop, a network folder or a USB stick: it carries everything with it.</p>
+      </div>
+      <div class="step">
+        <div class="step-n">STEP 03</div>
+        <h3 data-es="Trabaja con tus PDF">Work on your PDFs</h3>
+        <p data-es="La primera vez conviene tener conexión para que se descarguen las librerías. Después funciona igual sin red, y tus archivos siguen sin salir del equipo.">Have a connection the first time so the libraries download. After that it works offline just the same, and your files still never leave the machine.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ HONEST LIMITS ══════════ -->
+<section id="limits">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow"><span data-es="Sin humo">No hand-waving</span></p>
+      <h2 data-es="Lo que hace bien y lo que no puede hacer">What it does well, and what it cannot do</h2>
+      <p data-es="Un navegador tiene límites reales. Están escritos aquí y dentro de la propia herramienta, porque saber dónde está el límite es lo que hace fiable todo lo demás.">A browser has real limits. They are written here and inside the tool itself, because knowing where the limit is is what makes the rest trustworthy.</p>
+    </div>
+    <div class="cols">
+      <div class="col yes">
+        <h3><span data-es="Lo hace, y bien">Does it, and does it well</span></h3>
+        <ul>
+          <li><span class="tick">✓</span><span data-es="<b>Unir, dividir y reordenar</b> con vista previa de cada página."><b>Merge, split and reorder</b> with a preview of every page.</span></li>
+          <li><span class="tick">✓</span><span data-es="<b>Comprimir escaneados</b> entre un 40% y un 90%, o de forma suave conservando el texto."><b>Compress scans</b> by 40–90%, or lightly while keeping the text intact.</span></li>
+          <li><span class="tick">✓</span><span data-es="<b>Firmar con imagen</b> y colocarla al milímetro, incluso dentro de una tabla."><b>Sign with an image</b> and place it precisely, even inside a table.</span></li>
+          <li><span class="tick">✓</span><span data-es="<b>Censurar de verdad</b>: la zona borrada se rasteriza, el dato desaparece."><b>Redact for real</b>: the erased area is rasterised, the data is gone.</span></li>
+          <li><span class="tick">✓</span><span data-es="<b>Tablas a Excel</b> con importes, fechas y porcentajes como valores, no como texto."><b>Tables into Excel</b> with amounts, dates and percentages as values, not text.</span></li>
+        </ul>
+      </div>
+      <div class="col no">
+        <h3><span data-es="No lo hace, y lo dice">Does not do it, and says so</span></h3>
+        <ul>
+          <li><span class="tick">✗</span><span data-es="<b>Reescribir párrafos como Word.</b> La edición es línea a línea con parche de fondo."><b>Reflowing paragraphs like Word.</b> Editing is line by line with a background patch.</span></li>
+          <li><span class="tick">✗</span><span data-es="<b>Un Word fiel y editable a la vez.</b> Eliges: copia idéntica, o texto editable aproximado."><b>A Word file both faithful and editable.</b> You choose: identical copy, or approximate editable text.</span></li>
+          <li><span class="tick">✗</span><span data-es="<b>Firma cualificada o con DNIe.</b> Eso es cosa de la aplicación oficial de escritorio."><b>Qualified or smartcard signing.</b> That belongs to the official desktop app.</span></li>
+          <li><span class="tick">✗</span><span data-es="<b>PDF/A con validez certificada.</b> Genera la estructura correcta; la validación formal es aparte."><b>Certified PDF/A conformance.</b> It builds the right structure; formal validation is a separate step.</span></li>
+          <li><span class="tick">✗</span><span data-es="<b>Comparar palabra por palabra.</b> Te enseña dónde cambió algo, no qué palabra."><b>Word-by-word comparison.</b> It shows where something changed, not which word.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ SHARE ══════════ -->
+<section id="share">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow"><span data-es="Compártelo">Pass it on</span></p>
+      <h2 data-es="Si te ha servido, alguien más lo necesita">If it helped you, someone else needs it</h2>
+      <p data-es="Es MIT: úsalo, cópialo, cámbialo y repártelo por tu empresa sin pedir permiso. Aquí tienes un texto listo para publicar.">It is MIT: use it, copy it, change it and hand it around your company without asking. Here is a post ready to publish.</p>
+    </div>
+    <div class="share">
+      <div class="post">
+        <div class="post-head">
+          <span data-es="Texto para LinkedIn">Post for LinkedIn</span>
+          <button class="btn btn-ghost btn-small" id="copyBtn">
+            <svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="11" height="11" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M5 15V5a2 2 0 0 1 2-2h8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            <span data-es="Copiar">Copy</span>
+          </button>
+        </div>
+        <div class="post-body" id="postText"></div>
+      </div>
+      <ul class="tips">
+        <li><span class="k">01</span><span data-es="<b>Pon el enlace en el primer comentario</b>, no en el texto: LinkedIn reduce el alcance de las publicaciones que sacan gente de la plataforma."><b>Put the link in the first comment</b>, not in the post: LinkedIn throttles posts that send people off-platform.</span></li>
+        <li><span class="k">02</span><span data-es="<b>Adjunta una captura</b> de la herramienta funcionando. Sin imagen, el alcance cae en picado."><b>Attach a screenshot</b> of the tool in use. With no image, reach collapses.</span></li>
+        <li><span class="k">03</span><span data-es="<b>Cuida las tres primeras líneas.</b> Es lo único que se ve antes del «ver más»."><b>Nail the first three lines.</b> They are all anyone sees before “see more”.</span></li>
+        <li><span class="k">04</span><span data-es="<b>Responde a los comentarios de la primera hora.</b> Es lo que más empuja una publicación."><b>Reply to comments in the first hour.</b> Nothing pushes a post further.</span></li>
+        <li><span class="k">05</span><span data-es="<b>Añádelo también a «Proyectos» y a «Destacado»</b> de tu perfil: la publicación se hunde, el perfil se queda."><b>Add it to “Projects” and “Featured”</b> on your profile too: posts sink, profiles stay.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap foot-in">
+    <span data-es="Hecho por <b>Víctor Cappanera Marco</b>">Built by <b>Víctor Cappanera Marco</b></span>
+    <span class="spacer"></span>
+    <a href="https://github.com/" target="_blank" rel="noopener">GitHub</a>
+    <a href="https://www.linkedin.com/" target="_blank" rel="noopener">LinkedIn</a>
+    <a href="app.html" data-es="Abrir la aplicación">Open the app</a>
+    <span data-es="Licencia MIT">MIT licence</span>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  var $=function(s){return document.querySelector(s);};
+  var $$=function(s){return Array.prototype.slice.call(document.querySelectorAll(s));};
+
+  /* ---------- theme: light first, always ---------- */
+  var dark=false;
+  try{dark=localStorage.getItem('pdfeasy-site-theme')==='dark';}catch(e){}
+  function setTheme(d){
+    document.documentElement.setAttribute('data-theme',d?'dark':'light');
+    $('#iMoon').classList.toggle('hide',d);
+    $('#iSun').classList.toggle('hide',!d);
+    try{localStorage.setItem('pdfeasy-site-theme',d?'dark':'light');}catch(e){}
+  }
+  setTheme(dark);
+  $('#themeBtn').addEventListener('click',function(){dark=!dark;setTheme(dark);});
+
+  /* ---------- language: English base, Spanish in data-es ---------- */
+  var POST={
+    en:'Every time someone needs to merge two PDFs, they end up uploading a company document to some random free website.\n\n'+
+       'That felt like a problem worth solving properly, so I built the alternative.\n\n'+
+       'PDF Easy is a set of 40+ PDF tools that runs entirely inside the browser: merge, split, convert to Word or Excel, sign, redact, compress, OCR, compare versions, PDF/A, measure on plans. The file never leaves your computer. No server, no account, nothing to install — one single HTML file.\n\n'+
+       'Three decisions I learned more from than from the code:\n\n'+
+       '→ Be honest about the limits. The tool states plainly what it cannot do (reflow text like Word, qualified signatures, certified PDF/A) instead of hiding it. A user who knows where the limit is trusts everything else.\n\n'+
+       '→ Write for people who are not developers. Every warning is in plain words. "Cover" and "really erase" are not the same thing, and anyone about to share a document with personal data needs to understand that.\n\n'+
+       '→ Search the way people actually talk. The search box understands "make it smaller for email" and tolerates typos. Nobody looks for the technical name of a function.\n\n'+
+       'Demo and source in the first comment. MIT licensed — if it is useful to you, take it.\n\n'+
+       '#PDF #JavaScript #Privacy #WebDevelopment #Productivity',
+    es:'Cada vez que alguien necesita unir dos PDFs, acaba subiendo un documento de la empresa a una web gratuita cualquiera.\n\n'+
+       'Me pareció un problema que merecía una solución mejor, así que he construido una.\n\n'+
+       'PDF Easy es un conjunto de más de 40 herramientas para PDF que funciona entero dentro del navegador: unir, dividir, convertir a Word o Excel, firmar, censurar datos, comprimir, OCR, comparar versiones, PDF/A, medir sobre planos. El archivo nunca sale del equipo. Sin servidor, sin cuenta, sin instalar nada: un único archivo HTML.\n\n'+
+       'Tres decisiones de las que he aprendido más que del código:\n\n'+
+       '→ Ser honesto con los límites. La herramienta dice claramente lo que no puede hacer (reeditar el texto como Word, firma cualificada, PDF/A certificado) en vez de disimularlo. Un usuario que sabe dónde está el límite confía en el resto.\n\n'+
+       '→ Escribir para quien no es informático. Cada aviso está en lenguaje llano. "Tapar" y "borrar de verdad" no son lo mismo, y quien vaya a compartir un documento con datos personales necesita entenderlo.\n\n'+
+       '→ Buscar como habla la gente. El buscador entiende "que pese menos para el correo" y tolera erratas. Nadie busca por el nombre técnico de la función.\n\n'+
+       'Demo y código, en el primer comentario. Es MIT: si te sirve, cógelo.\n\n'+
+       '#PDF #JavaScript #Privacidad #DesarrolloWeb #Productividad'
+  };
+  var lang='en';
+  function applyLang(l){
+    lang=l;
+    document.documentElement.setAttribute('lang',l);
+    $$('[data-es]').forEach(function(el){
+      if(el.dataset.enHtml===undefined)el.dataset.enHtml=el.innerHTML;
+      el.innerHTML=(l==='es')?el.getAttribute('data-es'):el.dataset.enHtml;
+    });
+    $$('.langsw button').forEach(function(b){b.classList.toggle('on',b.dataset.l===l);});
+    $('#postText').textContent=POST[l];
+    try{localStorage.setItem('pdfeasy-site-lang',l);}catch(e){}
+  }
+  $$('.langsw button').forEach(function(b){
+    b.addEventListener('click',function(){applyLang(b.dataset.l);});
+  });
+  var saved='en';
+  try{saved=localStorage.getItem('pdfeasy-site-lang')||'en';}catch(e){}
+  applyLang(saved);
+
+  /* ---------- copy the post ---------- */
+  function toast(msg){
+    var t=$('#toast');t.textContent=msg;t.classList.add('on');
+    clearTimeout(toast._t);toast._t=setTimeout(function(){t.classList.remove('on');},2200);
+  }
+  $('#copyBtn').addEventListener('click',function(){
+    var txt=POST[lang];
+    var done=function(){toast(lang==='es'?'Texto copiado: pégalo en LinkedIn':'Post copied: paste it into LinkedIn');};
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(done,function(){fallback(txt,done);});
+    }else{fallback(txt,done);}
+  });
+  function fallback(txt,done){
+    var ta=document.createElement('textarea');
+    ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.select();
+    try{document.execCommand('copy');done();}catch(e){toast(lang==='es'?'Selecciona el texto y cópialo a mano':'Select the text and copy it manually');}
+    document.body.removeChild(ta);
+  }
+})();
+</script>
+</body>
+</html>
